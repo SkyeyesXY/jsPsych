@@ -11,6 +11,7 @@
 // NOTE: When using JS functions, parameters should be defined in order!
 
 
+// load function from other js file !!!alpha testing!!!
 function addScript(url){
 	var script = document.createElement('script');
 	script.setAttribute('type','text/javascript');

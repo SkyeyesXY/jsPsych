@@ -31,10 +31,8 @@ const config = {
 
 let jsPsych = initJsPsych({
     use_webaudio: false,
-    extensions: [{ type: Naodao }]
+    extensions: [{ type: Naodao }]  // 专用于脑岛平台的代码，cognition不需要
 })
-
-const subID = jsPsych.randomization.randomID(8)
 
 
 /* Blocks: HTML DOM Settings */
@@ -55,19 +53,6 @@ let set_html_style = {
             // 屏蔽键盘按键
             if (window.event.keyCode in { 27: 'Esc', 116: 'F5', 123: 'F12' }) { return false }
         }
-    },
-}
-
-let set_html_style_EAST = {
-    type: jsPsychCallFunction,
-    func: function() {
-        document.body.style.backgroundColor = 'black'
-        document.body.style.color = 'white'
-        document.body.style.fontSize = '32pt'
-        document.body.style.fontFamily = '微软雅黑'
-        document.body.style.fontWeight = 'normal'
-        document.body.style.lineHeight = '1.2em'
-        document.body.style.cursor = 'none'
     },
 }
 
@@ -126,6 +111,7 @@ let instruction = {
     post_trial_gap: 100
 }
 
+// 将刺激队列转为jsPsych的timeline_variables需要的格式（字典列表）
 function timeline_variables() {
     var stimulus_list = []
     for (var i = 0, len = trial_data.length; i < len; i++) {
@@ -139,6 +125,7 @@ function timeline_variables() {
     return stimulus_list
 }
 
+// Main trial. use jsPsych ultiple trials method: timeline
 let trial_loop = {
     type: jsPsychHtmlKeyboardResponse,
     timeline: [
@@ -223,8 +210,6 @@ let finish = {
 
 /* Run: run jspsych */
 
-
-// 初始化通用实验步骤
 let main_timeline = [
     set_html_style,
     open_fullscreen,

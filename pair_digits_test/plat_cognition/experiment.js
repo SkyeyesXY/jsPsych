@@ -54,8 +54,6 @@ let jsPsych = initJsPsych({
     use_webaudio: false,  
 })
 
-const subID = jsPsych.randomization.randomID(8)
-
 
 /* Blocks: HTML DOM Settings */
 
@@ -146,6 +144,7 @@ let instruction = {
     post_trial_gap: 100
 }
 
+// 将刺激队列转为jsPsych的timeline_variables需要的格式（字典列表）
 function timeline_variables() {
     var stimulus_list = []
     for (var i = 0, len = trial_data.length; i < len; i++) {
@@ -242,8 +241,6 @@ let finish = {
 
 /* Run: run jspsych */
 
-
-// 初始化通用实验步骤
 let main_timeline = [
     set_html_style,
     open_fullscreen,
