@@ -31,7 +31,9 @@ const config = {
 
 let jsPsych = initJsPsych({
     use_webaudio: false,
-    extensions: [{ type: Naodao }]  // 专用于脑岛平台的代码，cognition不需要
+    on_finish: function() {
+        jsPsych.data.get().localSave('csv', `data_${new Date().getTime()}.csv`);    // 将结果保存为csv文件
+    }
 })
 
 
@@ -139,6 +141,7 @@ let trial_loop = {
             post_trial_gap: config.trial_set.fixation_black_time
         },
         {
+            start_time: 0,
             stimulus: function() {
                 if (jsPsych.timelineVariable('type') < 24) {
                     type = 'A'
@@ -164,22 +167,25 @@ let trial_loop = {
                 return page_body
             },
             choices: [config.trial_set.left_key, config.trial_set.right_key],
+            on_load: function() {
+                this.start_time = new Date().getTime()
+            },
             on_finish: function(data) {
                 // score the response by comparing the key that was pressed (data.response) against the 
                 // correct response for this trial ('f'), and store reponse accuracy in the trial data
-                data.result = {
-                    'id': jsPsych.timelineVariable('id'),
-                    'left': jsPsych.timelineVariable('left'),
-                    'right': jsPsych.timelineVariable('right'),
-                    'type': jsPsych.timelineVariable('type')
-                }
+                let finish_time = new Date().getTime();
+                data.reaction_time = finish_time - this.start_time;
+                data.id = jsPsych.timelineVariable('id');
+                data.left = jsPsych.timelineVariable('left');
+                data.right = jsPsych.timelineVariable('right');
+                data.type = jsPsych.timelineVariable('type');
                 if((jsPsych.pluginAPI.compareKeys(data.response, config.trial_set.left_key)
                  && jsPsych.timelineVariable('left') > jsPsych.timelineVariable('right'))
                   || (jsPsych.pluginAPI.compareKeys(data.response, config.trial_set.right_key)
                    && jsPsych.timelineVariable('left') < jsPsych.timelineVariable('right'))){
-                    data.result['correct'] = 1;
+                    data.correct = 1;
                 } else {
-                    data.result['correct'] = 0; 
+                    data.correct = 0; 
                 }
             },
             post_trial_gap: config.trial_set.stimulus_black_time + config.trial_set.interval_time
@@ -199,12 +205,18 @@ let finish = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: function() {
         document.body.style.backgroundColor = 'rgb(250, 250, 250)';
-        return `<p style="font: bold 32pt 微软雅黑;>实验结束啦 ○(∩ ∩)○ 感谢您的参与！</p>
-        <div style="font: bold 24pt 微软雅黑; text-align: center;>请按空格或 5 秒后自动退出</div>`
+        let aver_rt = jsPsych.data.get().select('reaction_time').mean().toFixed(2);
+        let correct = (jsPsych.data.get().select('correct').sum() / trial_data.length * 100).toFixed(2);
+        return `<p style="font: bold 32pt 微软雅黑; color: #B22222">
+        实验结束啦 ○(∩ ∩)○ 感谢您的参与！</p>
+        <p style="font: 20pt 微软雅黑; color: black; text-align: center; line-height: 1.6em">
+        您的平均反应时为<b style="color: #B22222">${aver_rt}</b>ms，正确率为<b style="color: #B22222">${correct}</b>%</p>
+        <br/>
+        <br/>
+        <div style="font: bold 24pt 微软雅黑; text-align: center">请按空格或 5 秒后自动退出</div>`
     },
     choices: [' '],
-    trial_duration: 5000,
-    extensions: [{ type: Naodao }]
+    trial_duration: 5000
 }
 
 
